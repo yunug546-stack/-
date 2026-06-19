@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리반 게시판</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f5f5f5;color:#222}
+.header{background:#4f6ef7;color:white;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:20px;font-weight:600}
+.header-right{display:flex;align-items:center;gap:12px;font-size:14px}
+.btn{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-family:inherit}
+.btn-white{background:white;color:#4f6ef7;font-weight:600}
+.tabs{background:white;display:flex;border-bottom:1px solid #eee;padding:0 1rem}
+.tab{padding:14px 18px;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;color:#888}
+.tab.active{color:#4f6ef7;border-bottom:2px solid #4f6ef7;font-weight:600}
+.content{max-width:800px;margin:1.5rem auto;padding:0 1rem}
+.card{background:white;border-radius:12px;padding:1.25rem;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start}
+.card-title{font-size:15px;font-weight:600}
+.card-date{font-size:12px;color:#aaa}
+.card-body{font-size:13px;color:#555;margin-top:8px;line-height:1.6}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin-bottom:6px;font-weight:500}
+.badge-blue{background:#e8effe;color:#4f6ef7}
+.badge-amber{background:#fff7e0;color:#e6a817}
+.badge-red{background:#fff0f0;color:#ff4d4f}
+.badge-green{background:#f0fff4;color:#2ecc71}
+.add-btn{display:flex;align-items:center;gap:6px;font-size:13px;padding:10px 16px;border:1.5px dashed #ccc;border-radius:10px;background:white;cursor:pointer;color:#666;margin-bottom:1rem;width:100%;font-family:inherit}
+.add-btn:hover{border-color:#4f6ef7;color:#4f6ef7}
+.section{display:none}
+.section.active{display:block}
+.timetable{width:100%;border-collapse:collapse;font-size:13px;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.timetable th{background:#4f6ef7;color:white;padding:10px;text-align:center;font-weight:500}
+.timetable td{padding:10px;text-align:center;border:1px solid #f0f0f0;color:#444}
+.timetable tr:hover td{background:#f8f9ff}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:420px}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:1.25rem}
+.form-row{margin-bottom:12px}
+.form-row label{font-size:12px;color:#888;display:block;margin-bottom:4px}
+.form-row input,.form-row textarea,.form-row select{width:100%;font-size:13px;font-family:inherit;padding:9px 12px;border:1px solid #e0e0e0;border-radius:8px;background:white;color:#222}
+.form-row textarea{resize:vertical;min-height:80px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{padding:8px 16px;font-size:13px;border:1px solid #e0e0e0;border-radius:8px;background:white;cursor:pointer;color:#888;font-family:inherit}
+.btn-save{padding:8px 16px;font-size:13px;border:none;border-radius:8px;background:#4f6ef7;cursor:pointer;color:white;font-weight:600;font-family:inherit}
+.done-check{width:16px;height:16px;margin-right:10px;cursor:pointer;accent-color:#4f6ef7;flex-shrink:0;margin-top:2px}
+.item-done .card-title{text-decoration:line-through;color:#bbb}
+.item-done .card-body{color:#ccc}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5}
+.login-box{background:white;border-radius:16px;padding:2rem;width:90%;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center}
+.login-box h2{font-size:22px;font-weight:700;color:#4f6ef7;margin-bottom:0.5rem}
+.login-box p{font-size:13px;color:#aaa;margin-bottom:1.5rem}
+.login-input{width:100%;padding:10px 14px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:10px}
+.login-btn{width:100%;padding:11px;background:#4f6ef7;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-btn:hover{background:#3d5ce0}
+.role-tag{font-size:12px;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:20px}
+.empty{text-align:center;padding:3rem;color:#bbb;font-size:14px}
+.delete-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;padding:0 4px;line-height:1;flex-shrink:0}
+.delete-btn:hover{color:#ff4d4f}
+</style>
+</head>
+<body>
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <h2>📋 우리반 게시판</h2>
+    <p>아이디와 비밀번호를 입력해주세요</p>
+    <input class="login-input" id="login-id" placeholder="아이디" />
+    <input class="login-input" id="login-pw" placeholder="비밀번호" type="password" />
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <div style="margin-top:1rem;font-size:12px;color:#bbb">
+      기본 계정: 선생님 (teacher/1234) · 학생 (student/1234)
+    </div>
+  </div>
+</div>
+<div id="main-screen" style="display:none">
+  <div class="header">
+    <h1>📋 우리반 게시판</h1>
+    <div class="header-right">
+      <span id="user-label"></span>
+      <button class="btn btn-white" onclick="doLogout()">로그아웃</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('notice')">📢 공지사항</div>
+    <div class="tab" onclick="switchTab('homework')">📓 알림장</div>
+    <div class="tab" onclick="switchTab('perf')">📝 수행평가</div>
+    <div class="tab" onclick="switchTab('timetable')">🗓️ 시간표</div>
+  </div>
+  <div class="content">
+    <div id="sec-notice" class="section active">
+      <button class="add-btn" id="btn-add-notice" onclick="openForm('notice')">+ 공지사항 추가</button>
+      <div id="notice-list"></div>
+    </div>
+    <div id="sec-homework" class="section">
+      <button class="add-btn" id="btn-add-homework" onclick="openForm('homework')">+ 알림장 추가</button>
+      <div id="homework-list"></div>
+    </div>
+    <div id="sec-perf" class="section">
+      <button class="add-btn" id="btn-add-perf" onclick="openForm('perf')">+ 수행평가 추가</button>
+      <div id="perf-list"></div>
+    </div>
+    <div id="sec-timetable" class="section">
+      <button class="add-btn" id="btn-edit-timetable" onclick="openTimetableEdit()">✏️ 시간표 편집</button>
+      <div style="overflow-x:auto"><table class="timetable" id="timetable-table"></table></div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box"></div>
+</div>
+<script>
+const DAYS=['월','화','수','목','금'];
+const PERIODS=['1교시','2교시','3교시','4교시','5교시','6교시','7교시'];
+const SUBJECTS=['','국어','수학','영어','과학','사회','역사','도덕','체육','음악','미술','기술가정','정보','진로','창체','자습'];
+const ACCOUNTS={teacher:{pw:'1234',role:'teacher',name:'선생님'},student:{pw:'1234',role:'student',name:'학생'}};
+let currentUser=null;
+let data={notice:[],homework:[],perf:[],timetable:[]};
+function loadData(){const saved=localStorage.getItem('classboard_v1');if(saved)data=JSON.parse(saved);if(!data.timetable||data.timetable.length===0)data.timetable=PERIODS.map(()=>DAYS.map(()=>''));}
+function saveData(){localStorage.setItem('classboard_v1',JSON.stringify(data));}
+function doLogin(){const id=document.getElementById('login-id').value.trim();const pw=document.getElementById('login-pw').value;const acc=ACCOUNTS[id];if(!acc||acc.pw!==pw){alert('아이디 또는 비밀번호가 틀렸어요!');return;}currentUser={id,role:acc.role,name:acc.name};document.getElementById('login-screen').style.display='none';document.getElementById('main-screen').style.display='block';document.getElementById('user-label').innerHTML=`<span class="role-tag">${acc.name}</span>`;updatePermissions();renderAll();}
+function doLogout(){currentUser=null;document.getElementById('login-screen').style.display='flex';document.getElementById('main-screen').style.display='none';}
+function isTeacher(){return currentUser&&currentUser.role==='teacher';}
+function updatePermissions(){['btn-add-notice','btn-add-homework','btn-add-perf','btn-edit-timetable'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isTeacher()?'flex':'none';});}
+function switchTab(t){document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['notice','homework','perf','timetable'][i]===t);});document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');}
+function fmt(d){if(!d)return'';const dt=new Date(d);return`${dt.getMonth()+1}월 ${dt.getDate()}일`;}
+function dday(dateStr){const now=new Date();now.setHours(0,0,0,0);const dt=new Date(dateStr);dt.setHours(0,0,0,0);const diff=Math.round((dt-now)/(1000*60*60*24));if(diff>0)return{label:`D-${diff}`,cls:'badge-blue'};if(diff===0)return{label:'오늘!',cls:'badge-red'};return{label:'완료',cls:'badge-green'};}
+function renderAll(){renderNotice();renderHomework();renderPerf();renderTimetable();}
+function renderNotice(){const el=document.getElementById('notice-list');if(!data.notice.length){el.innerHTML='<div class="empty">공지사항이 없어요</div>';return;}el.innerHTML=data.notice.map((n,i)=>`<div class="card"><div class="card-header"><div><div class="badge badge-blue">공지</div><div class="card-title">${n.title}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="card-date">${fmt(n.date)}</span>${isTeacher()?`<button class="delete-btn" onclick="del('notice',${i})">×</button>`:''}</div></div>${n.body?`<div class="card-body">${n.body}</div>`:''}</div>`).join('');}
+function renderHomework(){const el=document.getElementById('homework-list');if(!data.homework.length){el.innerHTML='<div class="empty">알림장이 비어있어요</div>';return;}el.innerHTML=data.homework.map((h,i)=>`<div class="card ${h.done?'item-done':''}"><div style="display:flex;align-items:flex-start"><input type="checkbox" class="done-check" ${h.done?'checked':''} onchange="toggleDone('homework',${i})"><div style="flex:1"><div class="badge badge-amber">${h.subject||'기타'}</div><div class="card-title">${h.title}</div>${h.body?`<div class="card-body">${h.body}</div>`:''}</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="card-date">${fmt(h.date)}</span>${isTeacher()?`<button class="delete-btn" onclick="del('homework',${i})">×</button>`:''}</div></div></div>`).join('');}
+function renderPerf(){const el=document.getElementById('perf-list');if(!data.perf.length){el.innerHTML='<div class="empty">수행평가 일정이 없어요</div>';return;}const sorted=[...data.perf].map((p,i)=>({...p,_i:i})).sort((a,b)=>new Date(a.date)-new Date(b.date));el.innerHTML=sorted.map(p=>{const dd=p.done?{label:'완료',cls:'badge-green'}:dday(p.date);return`<div class="card ${p.done?'item-done':''}"><div style="display:flex;align-items:flex-start"><input type="checkbox" class="done-check" ${p.done?'checked':''} onchange="toggleDone('perf',${p._i})"><div style="flex:1"><div class="badge badge-blue">${p.subject||'기타'}</div><div class="card-title">${p.title}</div>${p.body?`<div class="card-body">${p.body}</div>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">${isTeacher()?`<button class="delete-btn" onclick="del('perf',${p._i})">×</button>`:''}<span class="badge ${dd.cls}">${dd.label}</span><span class="card-date">${fmt(p.date)}</span></div></div></div>`;}).join('');}
+function renderTimetable(){const tb=document.getElementById('timetable-table');let html=`<tr><th>교시</th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr>`;PERIODS.forEach((p,pi)=>{html+=`<tr><td style="font-weight:600;color:#4f6ef7;background:#f8f9ff">${p}</td>${DAYS.map((_,di)=>{const v=data.timetable[pi]&&data.timetable[pi][di]||'';return`<td>${v||'—'}</td>`;}).join('')}</tr>`;});tb.innerHTML=html;}
+function openForm(type){const box=document.getElementById('modal-box');let html='';if(type==='notice'){html=`<h3>📢 공지사항 추가</h3><div class="form-row"><label>제목</label><input id="f-title" placeholder="공지 제목"></div><div class="form-row"><label>날짜</label><input id="f-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div><div class="form-row"><label>내용</label><textarea id="f-body" placeholder="내용을 입력하세요"></textarea></div><div class="form-actions"><button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveForm('notice')">저장</button></div>`;}else if(type==='homework'){html=`<h3>📓 알림장 추가</h3><div class="form-row"><label>과목</label><select id="f-subject">${SUBJECTS.map(s=>`<option value="${s}">${s||'과목 선택'}</option>`).join('')}</select></div><div class="form-row"><label>내용</label><input id="f-title" placeholder="예: 수학 p.45 풀기"></div><div class="form-row"><label>마감일</label><input id="f-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div><div class="form-row"><label>메모 (선택)</label><textarea id="f-body" placeholder="추가 메모"></textarea></div><div class="form-actions"><button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveForm('homework')">저장</button></div>`;}else if(type==='perf'){html=`<h3>📝 수행평가 추가</h3><div class="form-row"><label>과목</label><select id="f-subject">${SUBJECTS.map(s=>`<option value="${s}">${s||'과목 선택'}</option>`).join('')}</select></div><div class="form-row"><label>평가명</label><input id="f-title" placeholder="예: 국어 독서 감상문"></div><div class="form-row"><label>날짜</label><input id="f-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div><div class="form-row"><label>메모 (선택)</label><textarea id="f-body" placeholder="범위, 주의사항 등"></textarea></div><div class="form-actions"><button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveForm('perf')">저장</button></div>`;}box.innerHTML=html;document.getElementById('modal-overlay').classList.add('open');}
+function openTimetableEdit(){const box=document.getElementById('modal-box');let rows=PERIODS.map((p,pi)=>`<div style="margin-bottom:10px"><div style="font-size:12px;color:#888;margin-bottom:4px;font-weight:600">${p}</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">${DAYS.map((d,di)=>`<div style="text-align:center"><div style="font-size:11px;color:#aaa;margin-bottom:2px">${d}</div><select id="tt-${pi}-${di}" style="width:100%;font-size:12px;padding:4px;border:1px solid #e0e0e0;border-radius:6px;font-family:inherit">${SUBJECTS.map(s=>`<option value="${s}" ${(data.timetable[pi]&&data.timetable[pi][di]||'')===(s)?'selected':''}>${s||'-'}</option>`).join('')}</select></div>`).join('')}</div></div>`).join('');box.innerHTML=`<h3>🗓️ 시간표 편집</h3>${rows}<div class="form-actions"><button class="btn-cancel" onclick="closeModal()">취소</button><button class="btn-save" onclick="saveTimetable()">저장</button></div>`;document.getElementById('modal-overlay').classList.add('open');}
+function saveTimetable(){data.timetable=PERIODS.map((_,pi)=>DAYS.map((_,di)=>{const el=document.getElementById(`tt-${pi}-${di}`);return el?el.value:'';}));saveData();closeModal();renderTimetable();}
+function saveForm(type){const title=(document.getElementById('f-title')||{}).value||'';const date=(document.getElementById('f-date')||{}).value||'';const body=(document.getElementById('f-body')||{}).value||'';const subjectEl=document.getElementById('f-subject');const subject=subjectEl?subjectEl.value:'';if(!title.trim()){alert('내용을 입력해주세요');return;}const item={title:title.trim(),date,body:body.trim(),done:false};if(subject&&subject!=='')item.subject=subject;data[type].unshift(item);saveData();closeModal();renderAll();}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function del(type,i){if(confirm('삭제할까요?')){data[type].splice(i,1);saveData();renderAll();}}
+function toggleDone(type,i){data[type][i].done=!data[type][i].done;saveData();renderAll();}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+loadData();
+</script>
+</body>
+</html>
